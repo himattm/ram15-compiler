@@ -1,9 +1,8 @@
 package visitor;
 
+import symboltable.RamVariable;
+import symboltable.Table;
 import syntaxtree.*;
-import symboltable.*;
-
-import java.util.Enumeration;
 
 
 public class CodeGenerator extends DepthFirstVisitor {
@@ -13,9 +12,6 @@ public class CodeGenerator extends DepthFirstVisitor {
     private Table symTable;
 
     private StringBuilder dataString = new StringBuilder("");
-
-    RamClass currentClass;
-    RamVariable currentVariable;
 
     public CodeGenerator(java.io.PrintStream o, Table st) {
         out = o;
@@ -184,6 +180,7 @@ public class CodeGenerator extends DepthFirstVisitor {
     @Override
     public void visit(Times n) {
         emitComment("begin times");
+
         n.e1.accept(this);
         emit("subu, $sp, #sp, 4", "move stack pointer");
         emit("sw $v0, ($sp)", "save e1 to stack");
@@ -224,61 +221,151 @@ public class CodeGenerator extends DepthFirstVisitor {
         n.s2.accept(this);
         emitLabel("isDone" + label);
 
-        emitComment("endif");
+        emitComment("end if");
     }
 
     @Override
     public void visit(And n) {
+        emitComment("start and");
 
+        n.e1.accept(this);
+        emit("subu, $sp, #sp, 4", "move stack pointer");
+        emit("sw $v0, ($sp)", "save e1 to stack");
+
+        n.e2.accept(this);
+        emit("lw $t1, ($sp)", "load e1 from stack");
+        emit("addu $sp, $sp, 4", "pop e2 from stack");
+
+        emit("and $v0, $t1, $v0", "calculate and then store in $v0");
+
+        emitComment("end and");
     }
 
     @Override
     public void visit(Or n) {
+        emitComment("start or");
 
+        n.e1.accept(this);
+        emit("subu, $sp, #sp, 4", "move stack pointer");
+        emit("sw $v0, ($sp)", "save e1 to stack");
+
+        n.e2.accept(this);
+        emit("lw $t1, ($sp)", "load e1 from stack");
+        emit("addu $sp, $sp, 4", "pop e2 from stack");
+
+        emit("or $v0, $t1, $v0", "calculate or then store in $v0");
+
+        emitComment("end or");
     }
 
     @Override
     public void visit(LessThan n) {
+        emitComment("start lessthan");
 
+        n.e1.accept(this);
+        emit("subu, $sp, #sp, 4", "move stack pointer");
+        emit("sw $v0, ($sp)", "save e1 to stack");
+
+        n.e2.accept(this);
+        emit("lw $t1, ($sp)", "load e1 from stack");
+        emit("addu $sp, $sp, 4", "pop e2 from stack");
+
+        emit("slt $v0, $t1, $v0", "calculate lessthan store in $v0");
+
+        emitComment("end lessthan");
     }
 
     @Override
     public void visit(Equals n) {
+        emitComment("start equals");
 
+        n.e1.accept(this);
+        emit("subu, $sp, #sp, 4", "move stack pointer");
+        emit("sw $v0, ($sp)", "save e1 to stack");
+
+        n.e2.accept(this);
+        emit("lw $t1, ($sp)", "load e1 from stack");
+        emit("addu $sp, $sp, 4", "pop e2 from stack");
+
+        emit("seq $v0, $t1, $v0", "calculate equal store in $v0");
+
+        emitComment("end equals");
     }
 
     @Override
     public void visit(Not n) {
+        emitComment("start not");
 
+        n.e.accept(this);
+        emit("xori $v0, $v0, 1", "XOR with 1-(True) ");
+
+        emitComment("end not");
     }
 
     @Override
     public void visit(Call n) {
+        emitComment("start call");
 
+
+
+        emitComment("end call");
     }
 
     @Override
     public void visit(MethodDecl n) {
+        emitComment("start methoddecl");
 
+        TypeCheckVisitor.currClass = symTable.getClass(n.i.s);
+        TypeCheckVisitor.currMethod = TypeCheckVisitor.currClass.getMethod(n.i.s);
+
+
+
+        emitComment("end methoddecl");
     }
 
     @Override
     public void visit(ClassDeclSimple n) {
+        emitComment("start classdeclsimple");
 
+
+
+        emitComment("end classdeclsimple");
     }
 
     @Override
     public void visit(Identifier n) {
+        emitComment("start indentifier");
 
+        RamVariable v;
+        if (TypeCheckVisitor.currMethod == null) {
+            v = TypeCheckVisitor.currClass.getVar(n.s);
+        } else {
+            v = TypeCheckVisitor.currMethod.getVar(n.s);
+            if (v == null) {
+                v = TypeCheckVisitor.currMethod.getParam(n.s);
+            }
+        }
+
+        if (v != null) {
+            emit("addi $v0, $fp, " + 4 , "save memory location of identifier to $v0");
+        }
+
+        emitComment("end identifier");
     }
 
     @Override
     public void visit(IdentifierExp n) {
+        emitComment("start identifierexp");
 
+
+
+        emitComment("end identifierexp");
     }
 
     @Override
     public void visit(Assign n) {
+        emitComment("start assign");
+
         n.e.accept(this); // result saved in $v0
         emit("subu $sp, $sp, 4", "increase stack by one word");
         emit("sw $v0, ($sp)", "save exp result to stack");
@@ -288,6 +375,8 @@ public class CodeGenerator extends DepthFirstVisitor {
         emit("addu $sp, $sp, 4", "pop exp result from stack");
 
         emit("sw $t1, ($v0)", "assign value to memory address of identifier");
+
+        emitComment("end assign");
     }
 
 }
