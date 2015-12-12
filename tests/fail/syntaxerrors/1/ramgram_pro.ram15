@@ -1,0 +1,29 @@
+class RamGram {
+
+    public static void main(String[] args){
+        {
+            //send a RamGram to Graham
+            Graham = new GramRecipient();
+            Send = Gram.sendGram(Gram.grabGram(), Graham);
+        }
+    }
+
+}
+
+class ProGram{
+
+    public int sendGram(Gram gram, GramRecipient gramRecip){
+        print(1);
+        return 1;
+    }
+    public Gram grabGram(){
+        return new Gram();
+    }
+    public void pay_for_gram(BankAccount bank_account){
+        bank_account.deduct(100);
+    }   
+
+}
+
+class Gram{}
+class GramRecipient{}

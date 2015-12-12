@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="Ram15Compiler" basedir=".">
+    <description>Builds, tests, and runs the project Ram15Compiler.</description>
+
+
+    <!-- set global properties for use in this ant script -->
+    <property name="SRC_DIR" location="src"/>
+    <property name="BUILD_DIR" location="build/classes"/>
+    <property name="LIB_DIR" location="lib"/>
+    <property name="TEST_DIR" location="tests"/>
+
+    <!-- libraries to be included on class path for compiler -->
+    <path id="build.path">
+        <pathelement location="${LIB_DIR}/junit-4.12.jar"/>
+        <pathelement location="${LIB_DIR}/commons-io-2.4.jar"/>
+        <pathelement location="${LIB_DIR}/commons-lang3-3.4.jar"/>
+    </path>
+
+    <!-- libraries to be included on class path at runtime -->
+    <path id="runtime.path">
+        <pathelement location="${BUILD_DIR}" />
+        <pathelement location="${LIB_DIR}/hamcrestcore1.3.jar" />
+        <pathelement location="${LIB_DIR}/junit-4.12.jar" />
+        <!-- <pathelement location="${LIB_DIR}/hamcrest-all-1.3.jar" /> -->
+        <pathelement location="${LIB_DIR}/commons-io-2.4.jar"/>
+        <pathelement location="${LIB_DIR}/commons-lang3-3.4.jar"/>
+    </path>
+
+    <!-- define the jflex command (task) and where it's located -->
+    <taskdef classname="jflex.anttask.JFlexTask" name="jflex"
+             classpath="${LIB_DIR}/jflex-1.6.1.jar" />
+
+
+    <!-- define the mars command (task) and where it's located -->
+    <!--<taskdef classname="Mars" name="mars"
+             classpath="${LIB_DIR}/Mars4_5.jar" />     -->
+
+
+    <!-- and now, the Ant targets... -->
+
+    <!-- help: Lists main targets -->
+    <target name="help">
+        <echo message="Try everything in this order:"/>
+        <echo message="-----------------------------------------"/>
+        <echo message="[SCANNER MODULE]"/>
+        <echo message="generateScanner: Generates .java Scanner using JFlex, based on supplied lexical specification"/>
+        <echo message="build: "/>
+        <echo message="runScanner: Runs Scanner on supplied input file"/>
+        <echo message="testScanner: Runs Scanner against all pass/fail tests"/>
+        <echo message="-----------------------------------------"/>
+        <echo message="[PARSER MODULE]"/>
+        <echo message="generateParser: Generates .java Parser using JavaCC, based on supplied grammar"/>
+        <echo message="build: "/>
+        <echo message="runParser: Runs Parser on supplied input file"/>
+        <echo message="testParser: Runs Parser against all pass/fail tests"/>
+        <echo message="-----------------------------------------"/>
+        <echo message="[PARSER MODULE w/ SEMANTIC ACTIONS]"/>
+        <echo message="generateSemantic: Generates .java Parser using JavaCC, based on supplied grammar that includes semantic actions"/>
+        <echo message="build: "/>
+        <echo message="runParser: Runs Parser on supplied input file"/>
+        <echo message="-----------------------------------------"/>
+        <echo message="build: compiles all .java files into .class files"/>
+        <echo message="-----------------------------------------"/>
+    </target>
+
+    <!-- init: create directory for build files if it doesn't already exist -->
+    <target name="init" description="minor housekeeping">
+        <mkdir dir="build" />
+        <mkdir dir="build/classes" />
+    </target>
+
+    <!-- build: Compile the java code from ${src} into ${build} -->
+    <target name="build" depends="init" description="compile the source code">
+        <echo message="Compiling .java files into .class files..." />
+        <javac srcdir="${SRC_DIR}"
+               destdir="${BUILD_DIR}"
+               classpathref="build.path"
+               includeantruntime="false"
+               debug="on"/>
+    </target>
+
+    <!-- clean: Removes generated files and folders. -->
+    <target name="clean">
+        <echo message="Removing generated files and folders..."/>
+        <delete file="${SRC_DIR}/frontend/scanner/generated/Yylex.java" />
+        <delete>
+            <fileset dir="${SRC_DIR}/frontend/parser/generated"
+                     includes="*.java"
+            />
+        </delete>
+        <delete>
+            <fileset dir="${basedir}" includes="**/*.class"/>
+        </delete>
+        <delete dir="${BUILD_DIR}" />
+    </target>
+
+    <!--
+        <target name="runDriver" depends="build" description="execute the code on a supplied program" >
+            <java classname="ram15compiler.Ram15Compiler" dir="${build}" />
+        </target>
+    -->
+
+    <!-- ******************** SCANNER ANT TARGETS **************************** -->
+
+
+    <!-- generateScanner: calls jflex on the .flex file and generates Scanner code-->
+    <target name="generateScanner" description="generate scanner based on lexical specification">
+        <jflex file="src/frontend/scanner/ram15_lex_spec.jflex"
+               destdir="${SRC_DIR}/"
+               verbose="on"
+               dump="on"
+        />
+    </target>
+
+
+    <!-- runScanner: Executes the scanner on a specified input file -->
+    <target name="runScanner" depends="build, generateScanner" description="lexes an input file">
+        <java classname="frontend.scanner.generated.Yylex"
+              dir="${BUILD_DIR}" fork="true" failonerror="true" logError="true">
+            <!-- <arg value="${TEST_DIR}/pass/pass1.ram15" /> -->
+            <arg value="${TEST_DIR}/fail/lexicalerrors/fail1.ram15" />
+        </java>
+    </target>
+
+
+    <!--
+    testScanner: Tests our scanner by running it on all tests
+    under tests/pass directory.
+    -->
+    <target name="testScanner" depends="build">
+        <echo message="Running JFlex scanner on the test programs..."/>
+        <javac srcdir="${basedir}/tests/junit/lexer"
+               destdir="${BUILD_DIR}"
+               includeantruntime="false"
+               debug="on">
+            <!-- Uncomment the following to see compiler warnings. -->
+            <!-- <compilerarg value="-Xlint" />                    -->
+            <classpath>
+                <path refid="build.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+        </javac>
+        <property name="PASS_TESTS_DIR" value="${basedir}/tests/pass/lexicalpass" />
+        <property name="FAIL_TESTS_DIR" value="${basedir}/tests/fail/lexicalerrors" />
+        <junit printsummary="yes" haltonfailure="no" showoutput="yes">
+            <sysproperty key="PASS_TESTS_DIR" value="${PASS_TESTS_DIR}" />
+            <sysproperty key="FAIL_TESTS_DIR" value="${FAIL_TESTS_DIR}" />
+            <classpath>
+                <path refid="runtime.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+            <test name="junit.JFlexScannerTest"
+                  haltonfailure="no">
+                <formatter type="plain" usefile="false"/>
+            </test>
+        </junit>
+    </target>
+
+
+    <!-- ******************** PARSER ANT TARGETS **************************** -->
+
+    <!-- generateParser: Generates JavaCC scanner and parser. -->
+    <target name="generateParser">
+        <echo message="Generating JavaCC parser .java files..."/>
+        <javacc target="${SRC_DIR}/frontend/parser/RamSemantic.jj"
+                outputdirectory="${SRC_DIR}/frontend/parser/generated"
+                javacchome="${LIB_DIR}">
+        </javacc>
+    </target>
+
+    <!-- runParser: Runs the genereated parser on a test file. -->
+    <target name="runParser" depends="generateParser, build">
+        <echo message="Running parser on specified input file..." />
+        <java classname="frontend.parser.generated.RamParser"
+              dir="${BUILD_DIR}" fork="true" failonerror="true" logError="true">
+            <arg value="${TEST_DIR}/pass/syntax/1/Array.ram15" />
+            <!-- <arg value="${TEST_DIR}/fail/syntaxerrors/fail1.ram15" /> -->
+        </java>
+    </target>
+
+    <!-- testParser: Tests our parser by running it on all tests
+    under tests/pass directory. -->
+    <target name="testParser" depends="generateParser, build">
+        <echo message="Running JFlex scanner on the test programs..."/>
+        <javac srcdir="${basedir}/tests/junit/parser"
+               destdir="${BUILD_DIR}"
+               includeantruntime="false"
+               debug="on">
+            <!-- Uncomment the following to see compiler warnings. -->
+            <!-- <compilerarg value="-Xlint" />                    -->
+            <classpath>
+                <path refid="build.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+        </javac>
+        <property name="PASS_TESTS_DIR" value="${basedir}/tests/pass/syntax" />
+        <property name="FAIL_TESTS_DIR" value="${basedir}/tests/fail/syntaxerrors" />
+        <junit printsummary="yes" haltonfailure="no" showoutput="yes">
+            <sysproperty key="PASS_TESTS_DIR" value="${PASS_TESTS_DIR}" />
+            <sysproperty key="FAIL_TESTS_DIR" value="${FAIL_TESTS_DIR}" />
+            <classpath>
+                <path refid="runtime.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+            <test name="junit.JavaCCParserTest"
+                  haltonfailure="no">
+                <formatter type="plain" usefile="false"/>
+            </test>
+        </junit>
+    </target>
+
+    <!-- ******************** SEMANTIC ANT TARGETS **************************** -->
+
+    <!-- generateSemantic: Generates JavaCC scanner and parser with semantic actions. -->
+    <target name="generateSemantic">
+        <echo message="Generating JavaCC parser .java files..."/>
+        <javacc target="${SRC_DIR}/frontend/parser/RamSemantic.jj"
+                outputdirectory="${SRC_DIR}/frontend/parser/generated"
+                javacchome="${LIB_DIR}">
+        </javacc>
+    </target>
+
+    <!-- runSemantic: Runs the genereated parser on a test file. -->
+    <target name="runSemantic" depends="generateSemantic, build">
+        <echo message="Running parser on specified input file..." />
+        <java classname="frontend.parser.generated.RamParser"
+              dir="${BUILD_DIR}" fork="true" failonerror="true" logError="true">
+            <arg value="${TEST_DIR}/pass/semantic/1/HelloWorld.ram15" />
+            <!-- <arg value="${TEST_DIR}/fail/syntaxerrors/fail1.ram15" /> -->
+        </java>
+    </target>
+
+    <!-- testPython: Tests our Python Printer by running it on all .ram15 files
+    in the directory and comparing against the expected output. -->
+    <target name="testPython" depends="clean, generateSemantic, build">
+        <echo message="Traversing AST, Python Printing, and Evaluating on the test programs..."/>
+        <javac srcdir="${basedir}/tests/prettypython/"
+               destdir="${BUILD_DIR}"
+               includeantruntime="false"
+               debug="on">
+            <!-- Uncomment the following to see compiler warnings. -->
+            <!-- <compilerarg value="-Xlint" />                    -->
+            <classpath>
+                <path refid="build.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+        </javac>
+        <property name="PYTHON_DIR" value="${basedir}/tests/prettypython" />
+
+        <junit printsummary="yes" haltonfailure="no" showoutput="yes">
+            <sysproperty key="PYTHON_DIR" value="${PYTHON_DIR}" />
+            <classpath>
+                <path refid="runtime.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+            <test name="prettypython.PythonPrinterTest"
+                  haltonfailure="no">
+                <formatter type="plain" usefile="true"/>
+            </test>
+        </junit>
+
+    </target>
+
+
+    <!-- ******************** SEMANTIC ANALYZER TARGETS **************************** -->
+
+    <!-- runSA: Runs the semantic analyzer. -->
+    <target name="runSA" depends="generateSemantic, build">
+        <echo message="Running semantic analysis (symbol table, type checking) ..." />
+        <java classname="ram15compiler.Ram15Compiler"
+              dir="${BUILD_DIR}" fork="true" failonerror="true" logError="true">
+            <arg value="${TEST_DIR}/pass/semantic/1/Logical.ram15" />
+            <!-- <arg value="${TEST_DIR}/fail/syntaxerrors/fail1.ram15" /> -->
+        </java>
+    </target>
+
+    <!-- testSA: Tests the semantic analyzer. -->
+    <target name="testSymTable" depends="generateSemantic, build">
+        <echo message="Testing symbol table ..." />
+        <javac srcdir="${basedir}/tests/junit/semantic/"
+               destdir="${BUILD_DIR}"
+               includeantruntime="false"
+               debug="on">
+            <!-- Uncomment the following to see compiler warnings. -->
+            <!-- <compilerarg value="-Xlint" />                    -->
+            <classpath>
+                <path refid="build.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+        </javac>
+
+        <junit printsummary="yes" haltonfailure="no" showoutput="yes">
+            <sysproperty key="TEST_FILE" value="${TEST_DIR}/pass/semantic/1/LinearSearch.ram15" />
+            <classpath>
+                <path refid="runtime.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+            <test name="junit.LinearSearchTest"
+                  haltonfailure="no">
+                <formatter type="plain" usefile="false"/>
+            </test>
+        </junit>
+        <junit printsummary="yes" haltonfailure="no" showoutput="yes">
+            <sysproperty key="TEST_FILE" value="${TEST_DIR}/fail/semanticerrors/1/pass1.ram15" />
+            <classpath>
+                <path refid="runtime.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+            <test name="junit.Pass1Test"
+                  haltonfailure="no">
+                <formatter type="plain" usefile="false"/>
+            </test>
+        </junit>
+    </target>
+
+    <!-- testTypeChecker: Tests our Python Printer by running it on all .ram15 files
+    in the directory and comparing against the expected output. -->
+    <target name="testTypeChecker" depends="clean, generateSemantic, build">
+        <echo message="Type Checking..."/>
+        <javac srcdir="${basedir}/tests/junit/semantic/"
+               destdir="${BUILD_DIR}"
+               includeantruntime="false"
+               debug="on">
+            <!-- Uncomment the following to see compiler warnings. -->
+            <!-- <compilerarg value="-Xlint" />                    -->
+            <classpath>
+                <path refid="build.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+        </javac>
+        <property name="PASS_TESTS_DIR" value="${basedir}/tests/pass/semantic" />
+        <property name="FAIL_TESTS_DIR" value="${basedir}/tests/fail/semanticerrors" />
+        <junit printsummary="yes" haltonfailure="no" showoutput="yes">
+            <sysproperty key="PASS_TESTS_DIR" value="${PASS_TESTS_DIR}" />
+            <sysproperty key="FAIL_TESTS_DIR" value="${FAIL_TESTS_DIR}" />
+            <classpath>
+                <path refid="runtime.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+            <test name="junit.TypeCheckerTest"
+                  haltonfailure="no">
+                <formatter type="plain" usefile="false"/>
+            </test>
+        </junit>
+
+    </target>
+
+    <!-- ******************** CODE GENERATION ANT TARGETS **************************** -->
+
+    <!-- runCodeGen: Runs the code generator on the given program. -->
+    <target name="runCodeGen" depends="generateSemantic, build">
+        <echo message="Performing Code Generation ..." />
+        <java classname="ram15compiler.Ram15Compiler"
+              dir="${BUILD_DIR}" fork="true" failonerror="true" logError="true">
+            <arg value="${TEST_DIR}/codegen/1-required/Factorial10.ram15" />
+            <!-- <arg value="${TEST_DIR}/codegen/And.ram15" /> -->
+        </java>
+    </target>
+
+    <!-- testCodeGen: Tests the Code Generator by running it on all .ram15 files
+    in the directory and comparing against the expected output. -->
+    <target name="testCodeGen" depends="clean,generateSemantic, build">
+        <echo message="Code Generating on the test programs..."/>
+        <javac srcdir="${basedir}/tests/codegen/"
+               destdir="${BUILD_DIR}"
+               includeantruntime="false"
+               debug="on">
+            <!-- Uncomment the following to see compiler warnings. -->
+            <!-- <compilerarg value="-Xlint" />                    -->
+            <classpath>
+                <path refid="build.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+        </javac>
+        <property name="CODEGEN_DIR" value="${basedir}/tests/codegen" />
+        <junit printsummary="yes" haltonfailure="no" showoutput="yes">
+            <sysproperty key="CODEGEN_DIR" value="${CODEGEN_DIR}" />
+            <sysproperty key="MARS_JAR" value="${LIB_DIR}/Mars4_5.jar" />
+            <classpath>
+                <path refid="runtime.path" />
+                <pathelement location="${BUILD_DIR}" />
+            </classpath>
+            <test name="codegen.CodeGenTestRequired"
+                  haltonfailure="no">
+                <formatter type="plain" usefile="false"/>
+            </test>
+            <test name="codegen.CodeGenTestExtra"
+                  haltonfailure="no">
+                <formatter type="plain" usefile="false"/>
+            </test>
+            <test name="codegen.CodeGenTestOther"
+                  haltonfailure="no">
+                <formatter type="plain" usefile="false"/>
+            </test>
+        </junit>
+    </target>
+
+</project>

@@ -1,0 +1,44 @@
+/*
+ *  SmartTV is a basic application that allows users to
+ *  view a printout of meaningless details about a single
+ *  "program".
+*/
+class SmartTV {
+    public static void main(String[] args){
+        TV = new SmartTVInstance().view();
+    }
+}
+
+class SmartTVInstance {
+    Program curr_program;
+    public int view(){
+        curr_program = Program.getInstance().view();
+        return 0;
+    }
+}
+
+class Program {
+    int prog_id;
+    int channel;
+    int starring_actor_id;
+    int start_time;
+    int end_time;
+    public Program getInstance(){
+        p = new Program();
+        prog_id = 0;
+        channel = 6;
+        starring_actor_id = 1;
+        start_time = 5;
+        end_time = 6;
+        return p;
+    }
+    public int view(){
+        println(prog_id);
+        println(channel);
+        println(starring_actor_id);
+        println(start_time);
+        println(end_time);
+        return 0;
+    }
+
+}

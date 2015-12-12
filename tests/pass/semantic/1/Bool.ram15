@@ -1,0 +1,18 @@
+class Prog3Test2{
+    public static void main(String[] args){
+        print(new BoolTest().Run());
+    }
+}
+class BoolTest{
+    int i;
+    int j;
+    public bool Run(){
+        int k;
+        int l;
+        k = 0;
+        j = 1;
+        k = k + 3 * j;
+        return k < j;
+    }
+
+}

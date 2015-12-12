@@ -1,0 +1,20 @@
+//This program will crash because only 1 statement is allowed in main class
+class Program1 {
+  // Print out the Fibonacci sequence for values < 50
+  public static void main(String[] args) {
+     //int lo ;
+     lo = 1 ;
+
+     //int hi ;
+     hi = 1 ;
+
+     println(lo);
+     
+     while (hi < 50) {
+        println(hi);
+        hi = lo + hi; // new hi
+        lo = hi - lo; /* new lo is (sum - old lo)
+                         i.e., the old hi */
+     }
+  }
+}

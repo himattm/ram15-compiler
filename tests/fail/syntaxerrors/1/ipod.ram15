@@ -1,0 +1,62 @@
+/*
+ * Main class kicks off the creation and run of an IPod
+ */
+class IPodMain {
+   
+    //main method
+    public static void main(String[] args){
+        {
+            an_ipod = IPod.make_IPod();
+            while(true){
+                an_ipod = an_ipod.take_selfie().freeze().crack_screen().replace();
+            }
+        }
+    }
+
+
+}
+
+/**
+ * The IPod class performs all the useful functions of an IPod
+*/
+class IPod {
+
+    int model_number;   //model number
+    Double value;       //value
+    Color color;        //color
+    Long bytes_storage; //storage amount in bytes
+    
+    public IPod make_IPod(){
+        an_ipod = new IPod();
+        an_ipod.model_numer = 1;
+        an_ipod.value = 300.00;
+        an_ipod.color = new Color(4);
+        an_ipod.bytes_storage = 0;
+        return an_ipod;
+    }
+
+    //key functions
+    public IPod take_selfie(){return this;}
+    public IPod freeze(){return this;}
+    public IPod crack_screen(){
+        value = 0.0;
+        return this;
+    }
+    public IPod replace(){
+        return make_IPod();
+    }
+
+    //accessors
+    public Double get_repair_cost(int value_of_ipod){
+        return value_of_ipod * 4;
+    }
+    public Long get_remaining_storage(){
+        return 0;
+    }
+    public Color get_color(Color initial_color){
+        return new Color(initial_color.get_val() - 100);
+    }
+    
+
+
+}

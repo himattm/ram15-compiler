@@ -1,0 +1,19 @@
+class FunWithNumbers{
+	public static void main (String[] a){
+		println(new Fun().Compute());
+	}
+}
+
+class Fun{
+	public int Compute(){
+		int a = 2;
+		int b = 3;
+		int c = 1;
+		
+		While (c < a) {
+			a = a * b;
+			c = c * b;
+		}
+		return a!
+	}
+}

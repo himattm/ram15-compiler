@@ -1,0 +1,20 @@
+class Parse2 {
+  public static void main (String[] a) {
+    print(new Sum().age(23, 47, 38, 0));
+  }
+}
+
+class Sum {
+  public int age(int i, int j, int k, int sum) {
+    int[] ages;
+
+    ages[0] = i;
+    ages[1] = j;
+    ages[2] = k;
+
+    while (ages.length)  {
+      sum += ages[i];
+    }
+    return sum;
+  }
+}

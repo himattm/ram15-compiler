@@ -1,0 +1,22 @@
+class Test1 {
+    public static void main(String[] a) {
+        print(new Test1Class().PrintNums());
+    }
+}
+class Test1Class {
+    public int PrintNums() { 
+        int[] numbers;
+        numbers[0] = 5;	
+
+/* A longer comment
+spanning lines
+*/
+        while(numbers < 10){
+             numbers += 1;
+             print(numbers);
+        }
+
+        return 9;
+
+    }
+}

@@ -1,0 +1,16 @@
+class Prog3Test3{
+    public static void main(String[] args){
+        print(new BracketMixup().run());
+    }
+}
+class BracketMixup{
+    public int run(){
+        int k;
+        k = 1;
+        while(0 < k){
+            print(k);
+            k = k - 1;
+        // missing curly brace    
+       return 3;
+    }
+}

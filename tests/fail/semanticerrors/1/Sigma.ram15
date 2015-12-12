@@ -1,0 +1,17 @@
+/* This program should work */
+
+class Sigma {
+    public static void main(String[] a) {
+        println(new Sum().Addition(100));
+    }
+}
+class Sum {
+    public int Addition(int num) { 
+        int plusNum;
+        if (num < 2)		
+            num_aux = 1;
+        else
+            plusNum = num + (this.Addition(num-1));
+        return plusNum;
+    }
+}

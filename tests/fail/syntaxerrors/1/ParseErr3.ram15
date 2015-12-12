@@ -1,0 +1,24 @@
+class ParseErr3 {
+  public static void main (String[} a) {
+    int nums = 100;
+    int remain = 0;
+
+    for (int i = 0; i < nums or i == nums; i += 1) {
+      remain = new Calc.mod(i);
+      
+      if (remain == 0)
+        println(i + is even);
+      else
+        println(i + is odd);
+    }
+  }
+}
+
+class Calc {
+  public int mod(int i) {
+    while (2 <= i)  {
+      i = i - 1;
+    }
+    return i;
+  }
+}

@@ -1,0 +1,7 @@
+class infiniteLoop { // 7's! As many 7's as you'll ever need!
+    public static void main(String[] a) {
+        while (1 < 2) {
+			println(7);
+		}
+	}
+}

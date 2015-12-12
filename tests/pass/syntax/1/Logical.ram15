@@ -1,0 +1,18 @@
+class Prog3Test1{
+    public static void main (String[] args){
+        println(new Test1().Show(10));
+    }
+}
+class Test1{
+        int localTest;
+
+        public int Show(int num){
+            int innerVar;
+            innerVar = num;
+            while (0 < innerVar or 0 == innerVal){
+                print (innerVar);
+                innerVar = innerVar - 1;
+            }
+            return num;
+        }
+}

@@ -1,0 +1,20 @@
+//This program will crash due to a missing return statement
+
+class Program4
+{
+	public static void main(String[] args) {
+		check = printOne;
+	}
+
+	
+}
+
+class PrinterClass{
+    bool value;
+    
+    public int printOne(bool val) {
+        value = val ;
+		println(value);
+        //return value;
+	}
+}

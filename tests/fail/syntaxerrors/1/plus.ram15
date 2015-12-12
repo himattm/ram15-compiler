@@ -1,0 +1,14 @@
+class Prog3Test3{
+    public static void main(String[] args){
+        print( new Operators().run());
+    }
+}
+class Operators{
+    public int run(){
+        int[] j;
+        int k;
+        k = 3 + + 3;
+        return k;
+    }
+
+}

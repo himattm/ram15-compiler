@@ -1,0 +1,16 @@
+class Spam{
+	public  void main(String[] a){
+		new Spammage().Go();
+	}
+}
+
+class Spammage{
+	public void Go(){
+		int a = 0;
+		int max = 100;
+
+		while(a < (max)){
+			println(a);
+			a += 1;
+	}
+}

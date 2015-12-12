@@ -1,0 +1,25 @@
+//This program should run to completion
+
+class Program2 {
+  // Print out the Fibonacci sequence for values < 50
+  public static void main(String[] args) {
+    println(new Fib().Test(1));
+    
+  }
+}
+
+class Fib{
+  public int Test(int hi) {
+    int lo ;
+    lo = 1 ;
+    hi = hi ;
+    println(lo);
+    while (hi < 50) {
+      println(hi);
+      hi = lo + hi; // new hi
+      lo = hi - lo; /* new lo is (sum - old lo)
+                       i.e., the old hi */
+    }
+    return hi;
+  }
+}

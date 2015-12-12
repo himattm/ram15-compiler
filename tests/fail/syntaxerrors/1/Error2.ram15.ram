@@ -1,0 +1,5 @@
+class Error2 {
+	public static void main() {
+		// Uh oh
+	}
+}
