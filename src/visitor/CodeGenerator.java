@@ -22,6 +22,10 @@ public class CodeGenerator extends DepthFirstVisitor {
         symTable = st;
     }
 
+    private int incrementLabel() {
+        return nextLabelNum++;
+    }
+
     private void emit(String s) {
         out.println("\t" + s);
     }
@@ -108,7 +112,7 @@ public class CodeGenerator extends DepthFirstVisitor {
     public void visit(Print n) {
         emitComment("begin print call");
         for (int i = 0; i < n.el.size(); i++) {
-            n.el.elementAt(i).accept(this);  // resulting int saved in $v0
+            n.el.elementAt(i).accept(this);
             emit("move $a0, $v0", "move int to $a0 to be accessed by syscall");
             emit("li $v0, 1", "set syscall to print");
             emit("syscall", "print call");
@@ -126,7 +130,7 @@ public class CodeGenerator extends DepthFirstVisitor {
     public void visit(Println n) {
         emitComment("begin println");
         for (int i = 0; i < n.el.size(); i++) {
-            n.el.elementAt(i).accept(this);  // resulting int saved in $v0
+            n.el.elementAt(i).accept(this);
             emit("move $a0, $v0", "move int to syscall arg");
             emit("li $v0, 1", "set syscall to print");
             emit("syscall", "print int");
@@ -195,17 +199,32 @@ public class CodeGenerator extends DepthFirstVisitor {
 
     @Override
     public void visit(True n) {
-        
+        emitComment("begin true");
+        emit("li $v0, 1", "load true value into $v0");
+        emitComment("end true");
     }
 
     @Override
     public void visit(False n) {
-
+        emitComment("begin false");
+        emit("li $v0, 0", "load false value into $v0");
+        emitComment("end false");
     }
 
     @Override
     public void visit(If n) {
+        emitComment("begin if");
 
+        int label = incrementLabel();
+        n.e.accept(this);
+        emit("beqz $v0, ifFalse" + label, "if ($v0 == 0) branch to ifFalse" + label);
+        n.s1.accept(this);
+        emit("j isDone" + label);
+        emitLabel("ifFalse" + label);
+        n.s2.accept(this);
+        emitLabel("isDone" + label);
+
+        emitComment("endif");
     }
 
     @Override
