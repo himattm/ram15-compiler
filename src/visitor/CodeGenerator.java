@@ -14,6 +14,9 @@ public class CodeGenerator extends DepthFirstVisitor {
 
     private StringBuilder dataString = new StringBuilder("");
 
+    RamClass currentClass;
+    RamVariable currentVariable;
+
     public CodeGenerator(java.io.PrintStream o, Table st) {
         out = o;
         symTable = st;
@@ -125,7 +128,7 @@ public class CodeGenerator extends DepthFirstVisitor {
         for (int i = 0; i < n.el.size(); i++) {
             n.el.elementAt(i).accept(this);  // resulting int saved in $v0
             emit("move $a0, $v0", "move int to syscall arg");
-            emit("li $v0, 1", "set syscall to print int");
+            emit("li $v0, 1", "set syscall to print");
             emit("syscall", "print int");
 
             if (i < n.el.size() - 1) {
@@ -144,22 +147,55 @@ public class CodeGenerator extends DepthFirstVisitor {
 
     @Override
     public void visit(Plus n) {
+        emitComment("begin plus");
+        n.e1.accept(this);
+        emit("subu, $sp, #sp, 4", "move stack pointer");
+        emit("sw $v0, ($sp)", "save e1 to stack");
 
+        n.e2.accept(this);
+        emit("lw $t1, ($sp)", "load e1 from stack");
+        emit("addu $sp, $sp, 4", "pop e2 from stack");
+
+        emit("add $v0, $t1, $v0", "add and store in $v0");
+
+        emitComment("end plus");
     }
 
     @Override
     public void visit(Minus n) {
+        emitComment("begin minus");
+        n.e1.accept(this);
+        emit("subu, $sp, #sp, 4", "move stack pointer");
+        emit("sw $v0, ($sp)", "save e1 to stack");
 
+        n.e2.accept(this);
+        emit("lw $t1, ($sp)", "load e1 from stack");
+        emit("addu $sp, $sp, 4", "pop e2 from stack");
+
+        emit("sub $v0, $t1, $v0", "subtract and store in $v0");
+
+        emitComment("end minus");
     }
 
     @Override
     public void visit(Times n) {
+        emitComment("begin times");
+        n.e1.accept(this);
+        emit("subu, $sp, #sp, 4", "move stack pointer");
+        emit("sw $v0, ($sp)", "save e1 to stack");
 
+        n.e2.accept(this);
+        emit("lw $t1, ($sp)", "load e1 from stack");
+        emit("addu $sp, $sp, 4", "pop e2 from stack");
+
+        emit("mul $v0, $t1, $v0", "multiply and store in $v0");
+
+        emitComment("end times");
     }
 
     @Override
     public void visit(True n) {
-
+        
     }
 
     @Override
@@ -234,6 +270,5 @@ public class CodeGenerator extends DepthFirstVisitor {
 
         emit("sw $t1, ($v0)", "assign value to memory address of identifier");
     }
-
 
 }
